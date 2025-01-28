@@ -7,13 +7,14 @@ body {
     align-items: center;
 }
 
-.navLink {
+.nav {
     width : 100px;
     height : 50px;
     padding : 24px;
 
     text-align: center;
 
+    background-size : 200%;
     border : 1px solid black;
 
     color : black;
@@ -28,7 +29,25 @@ body {
     }
 }
 
-.navLink:hover {
-    background-image: linear-gradient(to right, red 50%, blue 50%);
+@keyframes dehighlight {
+    from {
+        background-position: 100%;
+    }
+    to {
+        background-position: 0%;
+    }
+}
+
+.nav:hover {
+    background-image: linear-gradient(to right, black 50%, transparent 50%);
+    animation-name: highlight;
+    animation-duration: 0.75s;
     color: white;
+}
+
+.nav:not(:hover) {
+    background-image: linear-gradient(to right, transparent 50%, black 50%);
+    animation-name: dehighlight;
+    animation-duration: 0.75s;
+    color: black;
 }
