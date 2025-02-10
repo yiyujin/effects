@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Control</title>
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        let player;
+        const video_id = "Y0UO3FTTBkM";
+
+        let logData = [];
+
+        const eventData = [
+            { time: "00:01", player: "Kim", shot: "2pt" },
+            { time: "00:02", player: "Lee", shot: "3pt" },
+            { time: "00:03", player: "Park", shot: "2pt" }
+        ];
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '360',
+                width: '640',
+                videoId: video_id,
+                playerVars: { 'autoplay': 1, 'controls': 1 },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            updateCurrentTime();
+            checkVideoTime();
+        }
+
+        function seekToTime(seconds) {
+            if (player) {
+                player.seekTo(seconds, true);
+            }
+        }
+
+        function updateCurrentTime() {
+            if (player && player.getCurrentTime) {
+                document.getElementById("timeDisplay").innerText = `Current Time: ${player.getCurrentTime().toFixed(1)}s`;
+            }
+            requestAnimationFrame(updateCurrentTime);
+        }
+
+        // Convert "MM:SS" to seconds
+        function timeToSeconds(time) {
+            const [minutes, seconds] = time.split(":").map(Number);
+            return minutes * 60 + seconds;
+        }
+
+        const eventMap = eventData.map(event => ({
+            ...event,
+            timeInSeconds: timeToSeconds(event.time)
+        }));
+
+        function checkVideoTime() {
+            if (player && player.getCurrentTime) {
+                const currentTime = Math.floor(player.getCurrentTime()); // Round to the nearest second
+                
+                // Check if there's an event for this time
+                const event = eventMap.find(e => e.timeInSeconds === currentTime);
+                
+                if (event && !logData.some(e => e.time === event.time)) {
+                    logData.push(event); // Store full event object, not just text
+                    updateEventButtons();
+                }
+
+                // Keep checking the time
+                requestAnimationFrame(checkVideoTime);
+            }
+        }
+
+        function updateEventButtons() {
+            const eventDisplay = document.getElementById("eventDisplay");
+            eventDisplay.innerHTML = ""; // Clear previous buttons
+
+            logData.forEach(event => {
+                const btn = document.createElement("button");
+                btn.innerText = `${event.time} | ${event.player} | ${event.shot}`;
+                btn.onclick = () => seekToTime(event.timeInSeconds);
+                eventDisplay.appendChild(btn);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="player"></div>
+
+    <p id="timeDisplay">Current Time: 0s</p>
+
+    <h3>Log</h3>
+    <div id="eventDisplay"></div> <!-- Buttons will appear here -->
+</body>
+</html>

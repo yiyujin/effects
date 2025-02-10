@@ -1,3 +1,8 @@
+:root {
+    --bg : #e5f8ff;
+    --pt : #0f7fa6;
+}
+
 body {
     /* center div */
     height: 100vh;
@@ -5,6 +10,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    flex-direction : column;
+    gap : 24px;
+
+    background-color : var(--bg);
+
+    font-family : "Helvetica";
+    font-weight : 500;
 }
 
 .nav {
@@ -15,7 +28,7 @@ body {
     text-align: center;
 
     background-size : 200%;
-    border : 1px solid black;
+    border : 1px solid var(--pt);
 
     color : black;
 }
@@ -39,15 +52,15 @@ body {
 }
 
 .nav:hover {
-    background-image: linear-gradient(to right, black 50%, transparent 50%);
+    background-image: linear-gradient(to right, var(--pt) 50%, var(--bg) 50%);
     animation-name: highlight;
     animation-duration: 0.75s;
-    color: white;
+    color: var(--bg);
 }
 
 .nav:not(:hover) {
-    background-image: linear-gradient(to right, transparent 50%, black 50%);
+    background-image: linear-gradient(to right, var(--bg) 50%, var(--pt) 50%);
     animation-name: dehighlight;
     animation-duration: 0.75s;
-    color: black;
+    color: var(--pt);
 }
