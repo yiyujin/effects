@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polka Dot Mask Effect</title>
+
+    <style>
+        :root {
+            --bg : white;
+            /* --pt : rgba(255, 0, 0, 0); */
+            --pt : rgba(255, 0, 0, 0.25);
+
+            --pt : transparent;
+
+            --gridDensity : 4px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        p {
+            color: black;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        * {
+            /* border : 1px solid rgba(0, 255, 255, 0.4); */
+        }
+        
+        .mask-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 80px;
+
+            z-index: 10;
+        }
+        
+        .polka-dot-mask {
+            width: 100%;
+            height: 100%;
+
+            /* background-color: transparent; */
+            /* background-image: radial-gradient(transparent 1px, #ffffff 1px); */
+
+            background-color: var(--pt);
+
+            /* variations : radial-gradient vs. linear-gradient, 1px vs. 2px */
+            /* background-image: linear-gradient(var(--pt) 2px, var(--bg) 1px); */
+            /* background-image: radial-gradient(var(--pt) 2px, var(--bg) 1px); */
+            background-image: radial-gradient(var(--pt) 1px, var(--bg) 1px);
+
+            /* MAKE A GRID */
+            /* background-size: var(--gridDensity); */
+            background-size: var(--gridDensity) var(--gridDensity);
+
+            /*  */
+            mask: linear-gradient(rgb(0, 0, 0) 60%, rgba(0, 0, 0, 0) 100%);
+            /* mask: linear-gradient(black 100%, black 100%);
+
+            /* BLUR */
+            backdrop-filter: blur(3px);
+        }
+    </style>
+</head>
+<body>
+    <!-- SCROLL SECTION -->
+    <div class="content">
+        <h1>Polka Dot Mask Effect</h1>
+        
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam volutpat, nunc sit amet efficitur rhoncus, nibh neque ultrices ex, id ullamcorper mi diam in sapien. Donec sollicitudin eros in sem aliquet, in commodo ligula ullamcorper.</p>
+        <p>Phasellus vestibulum, metus eu feugiat interdum, mauris magna bibendum augue, nec finibus ipsum justo id quam. Donec consectetur lorem vel orci tempor tempus. Nullam placerat, mi non viverra commodo, eros nisi tempor dolor, id finibus nulla neque sit amet ipsum.</p>
+        <p>Aenean dignissim, nisi ac ultrices volutpat, dolor est ultrices neque, ac lacinia velit dui et ligula. Vivamus congue enim in est molestie, vel aliquet nisi hendrerit. Donec ut augue ac nibh consequat rhoncus at in ex. Morbi feugiat nibh ac est venenatis, ut ultricies lectus porta.</p>
+        <p>Etiam tempor nibh et eros scelerisque, vel fringilla ante euismod. Nulla facilisi. Praesent viverra mauris in odio faucibus consequat. Praesent et metus in lacus ornare convallis. Vivamus semper in urna vel condimentum.</p>
+        <p>Suspendisse potenti. Quisque quis turpis nec mi tincidunt bibendum. Nulla facilisi. Fusce vulputate justo sed volutpat hendrerit. Cras ut turpis sed eros fermentum bibendum ut a magna. Curabitur ultricies, libero vel aliquet posuere, sapien ipsum tincidunt risus, ac interdum leo massa nec nisl.</p>
+        <p>Nullam aliquam ex mauris, sed ultrices elit suscipit vitae. Sed ultrices metus ex, at finibus magna elementum vel. Nulla facilisi. Mauris vel leo odio. Fusce ut fermentum ex. Donec sed massa lobortis, lobortis quam ac, pellentesque magna.</p>
+        <p>Vestibulum quis venenatis dui. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed ut sagittis mauris, at feugiat augue. Fusce nec eros nec odio blandit vehicula. Integer at pellentesque tellus.</p>
+        <p>Suspendisse potenti. Cras elementum libero in ex iaculis, vel varius mi ultricies. Morbi ultricies risus vel magna fermentum, id pharetra metus cursus. Praesent at lectus eget massa sagittis consequat id eu quam.</p>
+        <p>Aliquam erat volutpat. Nullam vel tincidunt nisi. Etiam vehicula sapien ut magna venenatis, id dictum sapien volutpat. Integer lacinia tortor a lacus lobortis, in mattis odio tincidunt. Nullam vitae consequat magna, vel sagittis sapien.</p>
+        <p>Quisque sed augue at ex laoreet dictum ut a dolor. Sed et felis et ante commodo tristique. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Cras vulputate erat nec dui ultricies, eu blandit lorem eleifend.</p>
+        <p>Etiam sed semper nulla. Cras dapibus vel nulla non interdum. Proin malesuada leo nec nisi gravida, sit amet faucibus velit pharetra. Vestibulum rhoncus, risus non ullamcorper facilisis, quam orci aliquam erat, ut scelerisque erat mauris et libero.</p>
+        <p>Sed vel tincidunt purus. Nullam ullamcorper libero quis nisi sagittis, vel egestas nisl dapibus. Nulla facilisi. Vestibulum quis nulla sed ex pharetra pretium. Donec eget dolor non magna interdum pharetra.</p>
+        <p>Quisque euismod mauris et tincidunt fermentum. Vivamus sollicitudin velit vel lectus dignissim, vel tempus mi tempor. Aliquam erat volutpat. Maecenas tempus, lacus ut tincidunt finibus, justo elit suscipit arcu, vel ultrices velit est sit amet magna.</p>
+        <p>Duis aliquet, justo at lacinia facilisis, elit enim varius odio, sed tempus ipsum urna eu lacus. Nulla facilisi. Praesent at lectus eget massa sagittis consequat id eu quam.</p>
+        <p>Cras dapibus vel nulla non interdum. Proin malesuada leo nec nisi gravida, sit amet faucibus velit pharetra. Vestibulum rhoncus, risus non ullamcorper facilisis, quam orci aliquam erat, ut scelerisque erat mauris et libero.</p>
+    </div>
+    
+    <!-- GRID SECTION -->
+    <div class="mask-container">
+        <div class="polka-dot-mask"></div>
+    </div>
+</body>
+</html>
