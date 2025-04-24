@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Random Sparkle Effect</title>
+
+  <style>
+    body {
+        background-color: #333333;
+        color: white;
+        font-size: 16px;
+        line-height: 140%;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    p {
+        display: block;
+    }
+    
+    .sparkle-container {
+      position: relative;
+      display: inline-block;
+      /* padding: 8px; */
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background-color: #fcba28;
+      /* clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); */
+      /* clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); */
+      clip-path: polygon(64.86% 8.93%, 68.92% 48.21%, 100.00% 53.57%, 68.92% 58.93%, 64.86% 100.00%, 59.46% 58.93%, 31.08% 53.57%, 59.46% 48.21%);
+      opacity: 0; /* Start hidden */
+      pointer-events: none; /* Prevent interaction */
+    }
+
+    .sparkle-text {
+        background: -webkit-linear-gradient(#ffffff, #fcba28);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Sparkle animation with rotation */
+    @keyframes sparkle-animation {
+      0% {
+        opacity: 0;
+        transform: scale(0.5) rotate(0deg);
+        /* top: 14px;
+        left: 14px; */
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.0) rotate(180deg);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.0) rotate(360deg);
+      }
+    }
+
+    .sparkle-visible {
+      opacity: 1; /* Make sparkle visible */
+    }
+  </style>
+</head>
+<body>
+
+<p>
+  Have you ever thought about why a specific piece of technology gets popular? 
+  Usually there's never a single reason, but I do have a theory that I think is one of the primary drivers. 
+  I call it <span class="sparkle-container"> 
+    <span class="sparkle-text">the Sparkle Effect!</span>
+    <span class="sparkle"></span>
+    <span class="sparkle"></span>
+  </span>
+  Have you ever thought about why a specific piece of technology gets popular? 
+  Usually there's never a single reason, but I do have a theory that I think is one of the primary drivers. 
+  I call it <span class="sparkle-container"> 
+    <span class="sparkle-text">Hello World!</span>
+    <span class="sparkle"></span> 
+    <span class="sparkle"></span>
+  </span>
+</p>
+
+<script>
+  function initializeSparkles(container) {
+    const sparkles = container.querySelectorAll('.sparkle');
+    const sparkleText = container.querySelector('.sparkle-text');
+
+    function getRandomPosition() {
+      const textWidth = sparkleText.offsetWidth;
+      const textHeight = sparkleText.offsetHeight;
+      
+      const randomX = Math.random() * textWidth;
+      const randomY = Math.random() * textHeight;
+
+      return { top: randomY, left: randomX };
+    }
+
+    function positionSparkle(sparkle) {
+      const { top, left } = getRandomPosition();
+      sparkle.style.top = `${top}px`;
+      sparkle.style.left = `${left}px`;
+
+      const randomDuration = (Math.random() * 1.5 + 1).toFixed(2) + 's';
+      sparkle.style.animationDuration = randomDuration;
+
+      sparkle.style.opacity = '1';
+      sparkle.style.animationName = 'sparkle-animation';
+    }
+
+    sparkles.forEach(sparkle => {
+      sparkle.addEventListener('animationend', () => {
+        sparkle.style.opacity = '0'; // Reset opacity to 0
+        sparkle.style.animationName = 'none';
+        
+        // Trigger reflow to reset animation
+        sparkle.offsetHeight;
+
+        sparkle.style.animationName = 'sparkle-animation';
+        positionSparkle(sparkle);
+      });
+
+      positionSparkle(sparkle); // Initial position
+    });
+  }
+
+  // Select all sparkle containers and initialize sparkles for each
+  const sparkleContainers = document.querySelectorAll('.sparkle-container');
+  sparkleContainers.forEach(container => {
+    initializeSparkles(container);
+  });
+</script>
+
+</body>
+</html>

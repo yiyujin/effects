@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiny</title>
+    <style>
+        body {
+          margin: 400px;
+          background-color: #1b1b1b;
+        }
+      
+        button {
+          position: relative; /* Makes button the context */
+          overflow: hidden;   /* Keeps shine inside */
+          background-color: transparent;
+          color: #1b1b1b;
+          color : white;
+          border: none;
+          padding: 20px 40px;
+          cursor: pointer;
+        }
+
+        .buttonContainer {
+            width : 600px;
+            height : 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border : 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 24px;
+        }
+      
+        p {
+          font-weight: 100;
+          font-size: 40px;
+          margin: 0;
+          position: relative;
+          
+        }
+        .shiny-button .shine {
+        position: absolute;
+        top: 50%;
+        left: -80px;
+        width: 120px;
+        height: 120px;
+
+        background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+
+        border-radius: 50%;
+        transform: translateY(-50%);
+        filter: blur(20px) brightness(2);
+        box-shadow:
+            0 0 30px rgba(255, 255, 255, 0.8),
+            0 0 60px rgba(255, 255, 255, 0.6),
+            0 0 90px rgba(255, 255, 255, 0.4);
+
+        animation: shine 2.5s infinite linear;
+        pointer-events: none;
+        z-index: 0;
+        }
+
+        @keyframes shine {
+          0% {
+            left: -50px;
+          }
+          100% {
+            left: 100%;
+          }
+        }
+      </style>
+      
+</head>
+<body>
+    <div class = "buttonContainer">
+        <button class = "shiny-button">
+            <p>Processing Image</p>
+            <div class = "shine"></div>
+        </button>
+    </div>
+</body>
+</html>
