@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promise Flowchart Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script type="module" src="script.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>    
+    <div class="container">
+        <div class="code-panel">
+            <div class = "code-container">
+                <pre id="code-block">
+                    <!-- DYNAMIC ELEMENTS -->
+                </pre>
+
+                <div class ="code-line clickable" id = "flow1">delay(1000);</div>
+                <div class ="code-line clickable" id = "flow2">delay("1000");</div>
+            </div>
+        </div>
+
+        <div class = "flowchart-panel">
+            <div class="node" id="promise-node">Promise</div>
+            <div class="node" id="resolve-node">resolve</div>
+            <div class="node" id="reject-node">reject</div>
+            <div class="node diamond" id="isnan-node"><span>isNaN</span></div>
+            <div class="node" id="settimeout-node">setTimeout()</div>
+        </div>
+
+
+        <svg id="svg-container" width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none; z-index: -1;">
+
+        </svg>
+    </div>
+</body>
+</html>

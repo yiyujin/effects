@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+        :root{
+            --br : 6px;
+
+            --bg : #f6f6f6;
+
+            --pt : #1b1b1b;
+
+            --black2 : rgba(0, 0, 0, 0.02);
+            --black4 : rgba(0, 0, 0, 0.04);
+            --black8 : rgba(0, 0, 0, 0.08);
+            --black16 : rgba(0, 0, 0, 0.16);
+            --black40 : rgba(0, 0, 0, 0.4);
+
+            --ptR : rgb(255, 93, 67);
+            --ptG : rgb(56, 202, 164);
+            --ptB : rgba(69, 127, 245);
+            
+            --highlight : lime;
+        }
+
+        * {
+            /* border : 1px solid cyan !important; */
+        }
+
+        body {
+            margin: 0;
+            padding : 0;
+
+            background-color: var(--bg);
+            color : var(--pt);
+
+            font-family: 'Open Sans';
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            
+            flex-direction: row;
+            gap : 16px;
+            flex-wrap: wrap;
+
+            background: var(--black8);
+            border-radius: var(--br);
+
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .control-group input {
+            padding: 8px 12px;
+
+            border: none;
+            border-radius: var(--br);
+
+            width: 60px;
+            font-size: 14px;
+
+            border : 1px solid transparent;
+        }
+
+        .control-group input:focus {
+            outline: none;
+            border : 1px solid var(--black40);
+        }
+
+        .hidden-layers {
+            margin-top: 15px;
+        }
+
+        .hidden-layer {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+
+        .value-controls {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--black4);
+            border-radius: var(--br);
+        }
+
+        .value-section {
+            margin-bottom: 15px;
+        }
+
+        .value-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .value-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .value-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .value-input-group label {
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .value-input-group input {
+            width: 50px;
+            padding: 4px 6px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 16px;
+            
+            cursor: pointer;
+            font-size: 16px;
+
+            border-radius: var(--br);
+            border : none;
+            
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            opacity : 0.5;
+        }
+
+        #network-container {
+            padding : 100px;
+            
+            height: 800px;
+
+            background: var(--black4);
+            border-radius: var(--br);
+
+            overflow: hidden;
+            position: relative;
+        }
+
+        .node {
+            fill: var(--ptB);
+            stroke-width: 2;
+            stroke: var(--bg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node.input {
+            fill: var(--ptR);
+        }
+
+        .node.output {
+            fill: var(--ptG);
+        }
+
+        .node.highlighted {
+            opacity: 1;
+        }
+        
+        .node.dimmed {
+            opacity: 0.2;
+        }
+
+        .connection {
+            stroke: var(--pt);
+            stroke-width: 1;
+
+            fill: none;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .connection.highlighted {
+            opacity: 1;
+        }
+        
+        .connection.dimmed {
+            opacity: 0.2;
+        }
+
+        .layer-label {
+            font-size: 14px;
+            text-anchor: middle;
+        }
+
+        .node-value {
+            font-size: 18px;
+            fill: white;
+            font-weight: 400;
+
+            text-anchor: middle;
+            
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .connection-value {
+            font-size: 18px;
+            fill: var(--pt);
+            font-weight: 400;
+
+            text-anchor: middle;
+            
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .value-visible {
+            opacity: 1 !important;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+
+            padding: 8px 12px;
+            border-radius: 6px;
+
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            pointer-events: none;
+            z-index: 1000;
+
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Neural Network Visualization</h3>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="inputs">Input Nodes:</label>
+                <input type="number" id="inputs" value="2" min="1" max="10">
+            </div>
+            
+            <div class="control-group">
+                <label for="outputs">Output Nodes:</label>
+                <input type="number" id="outputs" value="1" min="1" max="10">
+            </div>
+            
+            <div class="control-group">
+                <label for="hidden-count">Hidden Layers:</label>
+                <input type="number" id="hidden-count" value="1" min="0" max="5">
+            </div>
+            
+            <div class="hidden-layers" id="hidden-layers">
+                <div class="hidden-layer">
+                    <label>Layer 1 Nodes:</label>
+                    <input type="number" value="3" min="1" max="15" class="hidden-input">
+                </div>
+                <div class="hidden-layer">
+                    <label>Layer 2 Nodes:</label>
+                    <input type="number" value="3" min="1" max="15" class="hidden-input">
+                </div>
+            </div>
+            
+            <button onclick="generateNetwork()">Generate Neural Network</button>
+            <button onclick="animateConnections()">Animate Links</button>
+            <button onclick="clearHighlight()">Clear Highlight</button>
+            
+            <div class="value-controls">
+                <div class="value-section">
+                    <h4>Node Values</h4>
+                    <div class="value-inputs" id="node-values"></div>
+                </div>
+                <div class="value-section">
+                    <h4>Connection Weights</h4>
+                    <div class="value-inputs" id="connection-values"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="network-container">
+            <svg id="network-svg" width="100%" height="100%"></svg>
+            <div id="tooltip" class="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        let networkData = {
+            inputs: 4,
+            hidden: [6, 4],
+            outputs: 3
+        };
+
+        let nodes = [];
+        let connections = [];
+        let nodeValues = {};
+        let connectionValues = {};
+
+        // Update hidden layers inputs based on count
+        function updateHiddenLayers() {
+            const count = parseInt(document.getElementById('hidden-count').value);
+            const container = document.getElementById('hidden-layers');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const div = document.createElement('div');
+                div.className = 'hidden-layer';
+                div.innerHTML = `
+                    <label>Layer ${i + 1} Nodes:</label>
+                    <input type="number" value="3" min="1" max="15" class="hidden-input">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Generate value input controls
+        function generateValueControls() {
+            const nodeContainer = document.getElementById('node-values');
+            const connectionContainer = document.getElementById('connection-values');
+            
+            nodeContainer.innerHTML = '';
+            connectionContainer.innerHTML = '';
+            
+            // Generate node value inputs
+            nodes.forEach((node, index) => {
+                const div = document.createElement('div');
+                div.className = 'value-input-group';
+
+                const layerName = node.layer === 0 ? 'I' : 
+                                node.layer === networkData.hidden.length + 1 ? 'O' : 
+                                'h' + node.layer;
+
+                const key = `${node.layer}-${node.index}`;
+                const defaultValue = layerName + (node.index + 1);
+                const value = nodeValues[key] || defaultValue;
+
+                div.innerHTML = `
+                    <label>${layerName}${node.index + 1}</label>
+                    <input type="text" value="${value}" 
+                        onchange="updateNodeValue(${node.layer}, ${node.index}, this.value)">
+                `;
+
+                nodeContainer.appendChild(div);
+
+                // Apply default value to the model/state
+                if (!nodeValues[key]) {
+                    updateNodeValue(node.layer, node.index, defaultValue);
+                }
+            });
+
+            
+            // Generate connection value inputs
+            connections.forEach((conn, index) => {
+                const div = document.createElement('div');
+                div.className = 'value-input-group';
+                
+                const fromLayerName = conn.from === 0 ? 'I' : 
+                                     conn.from === networkData.hidden.length + 1 ? 'O' : 
+                                     'H' + conn.from;
+                const toLayerName = conn.to === 0 ? 'I' : 
+                                   conn.to === networkData.hidden.length + 1 ? 'O' : 
+                                   'H' + conn.to;
+                
+                div.innerHTML = `
+                    <label>${fromLayerName}${conn.fromIndex + 1}-${toLayerName}${conn.toIndex + 1}</label>
+                    <input type="text" value="${connectionValues[`${conn.from}-${conn.fromIndex}-${conn.to}-${conn.toIndex}`] || ""}" 
+                           onchange="updateConnectionValue(${conn.from}, ${conn.fromIndex}, ${conn.to}, ${conn.toIndex}, this.value)">
+                `;
+                connectionContainer.appendChild(div);
+            });
+        }
+
+        function updateNodeValue(layer, index, value) {
+            // Store the value as-is (string or number)
+            nodeValues[`${layer}-${index}`] = value;
+            updateNodeDisplay(layer, index);
+        }
+
+        function updateConnectionValue(fromLayer, fromIndex, toLayer, toIndex, value) {
+            // Store the value as-is (string or number)
+            connectionValues[`${fromLayer}-${fromIndex}-${toLayer}-${toIndex}`] = value;
+            updateConnectionDisplay(fromLayer, fromIndex, toLayer, toIndex);
+        }
+
+        function updateNodeDisplay(layer, index) {
+            const node = nodes.find(n => n.layer === layer && n.index === index);
+            if (node && node.valueElement) {
+                const value = nodeValues[`${layer}-${index}`] || "";
+                node.valueElement.textContent = value;
+            }
+        }
+
+        function updateConnectionDisplay(fromLayer, fromIndex, toLayer, toIndex) {
+            const conn = connections.find(c => 
+                c.from === fromLayer && c.fromIndex === fromIndex && 
+                c.to === toLayer && c.toIndex === toIndex
+            );
+            if (conn && conn.valueElement) {
+                const value = connectionValues[`${fromLayer}-${fromIndex}-${toLayer}-${toIndex}`] || "";
+                conn.valueElement.textContent = value;
+            }
+        }
+
+        // Restore stored values to input fields and display elements
+        function restoreStoredValues() {
+            // Restore node values
+            Object.keys(nodeValues).forEach(key => {
+                const [layer, index] = key.split('-').map(Number);
+                updateNodeDisplay(layer, index);
+            });
+            
+            // Restore connection values  
+            Object.keys(connectionValues).forEach(key => {
+                const parts = key.split('-').map(Number);
+                const [fromLayer, fromIndex, toLayer, toIndex] = parts;
+                updateConnectionDisplay(fromLayer, fromIndex, toLayer, toIndex);
+            });
+            
+            // Update the input field values in the controls
+            const nodeInputs = document.querySelectorAll('#node-values input');
+            nodeInputs.forEach(input => {
+                const onchangeAttr = input.getAttribute('onchange');
+                if (onchangeAttr) {
+                    const match = onchangeAttr.match(/updateNodeValue\((\d+), (\d+),/);
+                    if (match) {
+                        const layer = parseInt(match[1]);
+                        const index = parseInt(match[2]);
+                        const storedValue = nodeValues[`${layer}-${index}`];
+                        if (storedValue !== undefined) {
+                            input.value = storedValue;
+                        }
+                    }
+                }
+            });
+            
+            const connectionInputs = document.querySelectorAll('#connection-values input');
+            connectionInputs.forEach(input => {
+                const onchangeAttr = input.getAttribute('onchange');
+                if (onchangeAttr) {
+                    const match = onchangeAttr.match(/updateConnectionValue\((\d+), (\d+), (\d+), (\d+),/);
+                    if (match) {
+                        const fromLayer = parseInt(match[1]);
+                        const fromIndex = parseInt(match[2]);
+                        const toLayer = parseInt(match[3]);
+                        const toIndex = parseInt(match[4]);
+                        const storedValue = connectionValues[`${fromLayer}-${fromIndex}-${toLayer}-${toIndex}`];
+                        if (storedValue !== undefined) {
+                            input.value = storedValue;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Generate network structure
+        function generateNetwork() {
+            const inputs = parseInt(document.getElementById('inputs').value);
+            const outputs = parseInt(document.getElementById('outputs').value);
+            const hiddenInputs = document.querySelectorAll('.hidden-input');
+            const hidden = Array.from(hiddenInputs).map(input => parseInt(input.value));
+            
+            networkData = { inputs, hidden, outputs };
+            
+            drawNetwork();
+            generateValueControls();
+            // Restore all stored values after regenerating controls
+            restoreStoredValues();
+        }
+
+        function drawNetwork() {
+            const svg = document.getElementById('network-svg');
+            const rect = svg.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+            
+            // Clear previous network
+            svg.innerHTML = '';
+            nodes = [];
+            connections = [];
+            
+            const layers = [networkData.inputs, ...networkData.hidden, networkData.outputs];
+            const layerCount = layers.length;
+            const layerSpacing = width / (layerCount + 1);
+            
+            // Create nodes for each layer
+            layers.forEach((nodeCount, layerIndex) => {
+                const x = layerSpacing * (layerIndex + 1);
+                const nodeSpacing = height / (nodeCount + 1);
+                
+                // Add layer label
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', 30);
+                label.setAttribute('class', 'layer-label');
+                label.textContent = layerIndex === 0 ? 'Input' : 
+                                  layerIndex === layers.length - 1 ? 'Output' : 
+                                  `Hidden Layer ${layerIndex}`;
+                svg.appendChild(label);
+                
+                for (let nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+                    const y = nodeSpacing * (nodeIndex + 1);
+                    
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', x);
+                    circle.setAttribute('cy', y);
+                    circle.setAttribute('r', 24); // node size
+                    circle.setAttribute('class', `node ${layerIndex === 0 ? 'input' : layerIndex === layers.length - 1 ? 'output' : 'hidden'}`);
+                    
+                    // Add click event for highlighting
+                    circle.addEventListener('click', () => highlightPath(layerIndex, nodeIndex));
+                    
+                    // Add mouseover event for tooltip (only for hidden and output nodes)
+                    if (layerIndex > 0) { // Not input layer
+                        circle.addEventListener('mouseenter', (e) => showTooltip(e, layerIndex, nodeIndex));
+                        circle.addEventListener('mouseleave', hideTooltip);
+                    }
+                    
+                    // Create value text element
+                    const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    valueText.setAttribute('x', x);
+                    valueText.setAttribute('y', y + 5);
+                    valueText.setAttribute('class', 'node-value');
+                    valueText.textContent = '';
+                    
+                    // Initial scale animation
+                    gsap.set(circle, { scale: 0 });
+                    gsap.to(circle, { 
+                        scale: 1, 
+                        duration: 0.6, 
+                        delay: layerIndex * 0.2 + nodeIndex * 0.1,
+                        ease: "back.out(1.7)"
+                    });
+                    
+                    svg.appendChild(circle);
+                    svg.appendChild(valueText);
+                    
+                    nodes.push({ 
+                        x, y, 
+                        layer: layerIndex, 
+                        index: nodeIndex, 
+                        element: circle,
+                        valueElement: valueText
+                    });
+                }
+            });
+            
+            // Create connections between layers
+            for (let i = 0; i < layers.length - 1; i++) {
+                const currentLayer = nodes.filter(n => n.layer === i);
+                const nextLayer = nodes.filter(n => n.layer === i + 1);
+                
+                currentLayer.forEach((from, fromIndex) => {
+                    nextLayer.forEach((to, toIndex) => {
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        
+                        line.setAttribute('x1', from.x);
+                        line.setAttribute('y1', from.y);
+                        line.setAttribute('x2', to.x);
+                        line.setAttribute('y2', to.y);
+                        line.setAttribute('class', 'connection');
+                        
+                        // Create connection value text
+                        const midX = (from.x + to.x) / 2;
+                        const midY = (from.y + to.y) / 2;
+                        const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        valueText.setAttribute('x', midX);
+                        valueText.setAttribute('y', midY - 8);
+                        valueText.setAttribute('class', 'connection-value');
+                        valueText.textContent = '';
+                        
+                        const length = Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2));
+                        line.setAttribute('stroke-dasharray', length);
+                        line.setAttribute('stroke-dashoffset', length);
+                        
+                        svg.insertBefore(line, svg.firstChild); // Insert behind nodes
+                        svg.appendChild(valueText);
+                        
+                        connections.push({ 
+                            element: line, 
+                            from: from.layer, 
+                            to: to.layer,
+                            fromIndex: fromIndex,
+                            toIndex: toIndex,
+                            fromNode: from,
+                            toNode: to,
+                            valueElement: valueText
+                        });
+                    });
+                });
+            }
+        }
+
+        function highlightPath(targetLayer, targetIndex) {
+            const targetNode = nodes.find(n => n.layer === targetLayer && n.index === targetIndex);
+            if (!targetNode) return;
+            
+            // Check if this node is already highlighted (toggle behavior)
+            if (targetNode.element.classList.contains('highlighted')) {
+                clearHighlight();
+                return;
+            }
+            
+            // Find all paths from input to this node
+            const pathNodes = new Set();
+            const pathConnections = new Set();
+            
+            function findPaths(currentLayer, currentIndex) {
+                pathNodes.add(`${currentLayer}-${currentIndex}`);
+                
+                if (currentLayer === 0) return; // Reached input layer
+                
+                // Find all connections leading to this node
+                const incomingConnections = connections.filter(c => 
+                    c.to === currentLayer && c.toIndex === currentIndex
+                );
+                
+                incomingConnections.forEach(conn => {
+                    pathConnections.add(`${conn.from}-${conn.fromIndex}-${conn.to}-${conn.toIndex}`);
+                    findPaths(conn.from, conn.fromIndex);
+                });
+            }
+            
+            findPaths(targetLayer, targetIndex);
+            
+            // Set all nodes and connections to dimmed first
+            nodes.forEach(node => {
+                if (pathNodes.has(`${node.layer}-${node.index}`)) {
+                    node.element.classList.add('highlighted');
+                    node.element.classList.remove('dimmed');
+                    node.valueElement.classList.add('value-visible');
+                } else {
+                    node.element.classList.add('dimmed');
+                    node.element.classList.remove('highlighted');
+                    node.valueElement.classList.remove('value-visible');
+                }
+            });
+            
+            connections.forEach(conn => {
+                if (pathConnections.has(`${conn.from}-${conn.fromIndex}-${conn.to}-${conn.toIndex}`)) {
+                    conn.element.classList.add('highlighted');
+                    conn.element.classList.remove('dimmed');
+                    conn.valueElement.classList.add('value-visible');
+                } else {
+                    conn.element.classList.add('dimmed');
+                    conn.element.classList.remove('highlighted');
+                    conn.valueElement.classList.remove('value-visible');
+                }
+            });
+        }
+
+        function clearHighlight() {
+            // Remove highlight and dimmed classes from all nodes and connections
+            nodes.forEach(node => {
+                node.element.classList.remove('highlighted', 'dimmed');
+                node.valueElement.classList.remove('value-visible');
+            });
+            
+            connections.forEach(conn => {
+                conn.element.classList.remove('highlighted', 'dimmed');
+                conn.valueElement.classList.remove('value-visible');
+            });
+        }
+
+        function showTooltip(event, layer, index) {
+            const tooltip = document.getElementById('tooltip');
+            const formula = generateSigmoidFormula(layer, index);
+
+            tooltip.textContent = formula;
+            tooltip.classList.add('visible');
+
+            // Defer positioning until tooltip content updates
+            requestAnimationFrame(() => {
+                const node = nodes.find(n => n.layer === layer && n.index === index);
+                const nodeRect = node.element.getBoundingClientRect();
+                const containerRect = document.getElementById('network-container').getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+
+                // Compute center of the SVG circle relative to the container
+                const centerX = nodeRect.left + nodeRect.width / 2 - containerRect.left;
+                const top = nodeRect.top - containerRect.top - tooltipRect.height - 10;
+
+                tooltip.style.left = `${centerX - tooltipRect.width / 2}px`;
+                tooltip.style.top = `${top}px`;
+            });
+        }
+
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.classList.remove('visible');
+        }
+
+        function generateSigmoidFormula(targetLayer, targetIndex) {
+            // Find all connections coming into this node
+            const incomingConnections = connections.filter(c => 
+                c.to === targetLayer && c.toIndex === targetIndex
+            );
+            
+            if (incomingConnections.length === 0) {
+                return "sigmoid(bias)";
+            }
+            
+            // Build the weighted sum terms
+            const terms = incomingConnections.map(conn => {
+                const fromNode = nodes.find(n => n.layer === conn.from && n.index === conn.fromIndex);
+                
+                // Get node label
+                const nodeLabel = getNodeLabel(conn.from, conn.fromIndex);
+                
+                // Get weight value or use generic weight notation
+                const weightKey = `${conn.from}-${conn.fromIndex}-${conn.to}-${conn.toIndex}`;
+                const weightValue = connectionValues[weightKey];
+                const weightLabel = weightValue !== undefined && weightValue !== "" ? 
+                    weightValue : `w${conn.from}${conn.fromIndex}`;
+                
+                return `${nodeLabel}*${weightLabel}`;
+            });
+            
+            const weightedSum = terms.join(' + ');
+            return `sigmoid(${weightedSum} + bias)`;
+        }
+
+        function getNodeLabel(layer, index) {
+            // Get the actual value if it exists, otherwise use generic label
+            const nodeKey = `${layer}-${index}`;
+            const nodeValue = nodeValues[nodeKey];
+            
+            if (nodeValue !== undefined && nodeValue !== "") {
+                return nodeValue;
+            }
+            
+            // Generate generic label based on layer
+            if (layer === 0) {
+                return `x${index + 1}`;
+            } else if (layer === networkData.hidden.length + 1) {
+                return `o${index + 1}`;
+            } else {
+                return `h${layer}${index + 1}`;
+            }
+        }
+
+        function animateConnections() {
+            // Reset all connections
+            connections.forEach(conn => {
+                const length = Math.sqrt(
+                    Math.pow(conn.element.getAttribute('x2') - conn.element.getAttribute('x1'), 2) + 
+                    Math.pow(conn.element.getAttribute('y2') - conn.element.getAttribute('y1'), 2)
+                );
+                gsap.set(conn.element, { 
+                    strokeDasharray: length,
+                    strokeDashoffset: length 
+                });
+            });
+            
+            // Group connections by layer transition
+            const layerGroups = {};
+            connections.forEach(conn => {
+                const key = `${conn.from}-${conn.to}`;
+                if (!layerGroups[key]) layerGroups[key] = [];
+                layerGroups[key].push({
+                    element: conn.element,
+                    fromIndex: conn.fromIndex,
+                    toIndex: conn.toIndex,
+                    fromNode: conn.fromNode,
+                    toNode: conn.toNode
+                });
+            });
+
+            // Calculate adaptive timing based on network size
+            const totalConnections = connections.length;
+            const layerGroupCount = Object.keys(layerGroups).length;
+            
+            const baseDelay = 2;
+            const staggerAmount = 1;
+            
+            // Animate each layer group with proper stagger
+            Object.keys(layerGroups).forEach((key, groupIndex) => {
+                const connections = layerGroups[key];
+                const elements = connections.map(conn => conn.element);
+                
+                // Animate connection lines with stagger
+                gsap.to(elements, {
+                    strokeDashoffset: 0,
+                    duration: 1.5,
+                    delay: groupIndex * baseDelay,
+                    stagger: {
+                        amount: staggerAmount,
+                        from: "start"
+                    },
+                    ease: "power2.out"
+                });
+                
+                // Animate nodes with proper timing coordination
+                const fromNodes = [...new Set(connections.map(conn => conn.fromNode))];
+                const toNodes = [...new Set(connections.map(conn => conn.toNode))];
+                
+                // Animate "from" nodes (source nodes)
+                fromNodes.forEach((node, nodeIndex) => {
+                    gsap.to(node.element, {
+                        scale: 1.4,
+                        duration: 0.2,
+                        delay: groupIndex * baseDelay + nodeIndex * 0.1,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: "power2.out"
+                    });
+                });
+                
+                // Animate "to" nodes (destination nodes) with a slight delay
+                toNodes.forEach((node, nodeIndex) => {
+                    gsap.to(node.element, {
+                        scale: 1.4,
+                        duration: 0.2,
+                        delay: groupIndex * baseDelay + 0.8 + nodeIndex * 0.1,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: "power2.out"
+                    });
+                });
+            });
+        }
+
+        // ADD EVENT LISTENERS
+        document.getElementById('hidden-count').addEventListener('change', updateHiddenLayers);
+
+        // INITIALIZE
+        updateHiddenLayers();
+        generateNetwork();
+        
+        // Auto-animate on load
+        setTimeout(() => {
+            animateConnections();
+        }, 1000);
+    </script>
+</body>
+</html>

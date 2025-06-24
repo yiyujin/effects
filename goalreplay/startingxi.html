@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Goal Replay</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+    * {
+      /* border : 1px solid rgba(0, 255, 0, 0.16); */
+
+      margin : 0;
+      padding : 0;
+    }
+
+    body {
+      background: #111;
+      color: white;
+      font-family: "Open Sans";
+    }
+
+    #field {
+        /* FS */
+        background : #1b1b1b;
+        width: 600px;
+        height: 600px;
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: repeat(10, 1fr);
+        position: relative;
+        overflow: visible;
+    }
+
+    .field-elements {
+        position: absolute;
+        fill: none;
+        stroke: #575757;
+        stroke-width: 4;
+    }
+
+
+    .grid-cell {
+      border: 1px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+
+      opacity: 0;
+    }
+
+    .grid-cell.highlight {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .grid-cell.visible {
+        opacity : 1;
+    }
+
+    .snap-point {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.16);
+      
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .snap-point.visible {
+      opacity: 1;
+    }
+
+    .snap-point.active {
+      /* background: rgba(255, 255, 255, 0.16); */
+      /* transform: translate(-50%, -50%) scale(1.2); */
+    }
+
+    .player {
+      cursor: grab;
+      z-index: 10;
+
+      padding: 6px;
+      width: 80px;
+
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: auto;
+      user-select: none;
+      position: absolute;
+      transform: translate(-50%, -50%);
+    }
+
+    .player.dragging {
+      background: rgba(255, 255, 255, 0.16);
+      cursor: grabbing;
+      z-index: 20;
+    }
+
+    .image-container {
+      height: 88px;
+
+      overflow: hidden;
+      user-select: none;
+      border-bottom: 1px solid white;
+    }
+
+    .player-photo {
+      width: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .player-info {
+      user-select: none;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 24px;
+    }
+
+    .player-number {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .player-name {
+      font-size: 18px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .controls {
+      margin: 20px;
+    }
+
+    button {
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      padding: 8px 16px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    .info {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <h1>Starting XI</h1>
+
+  <div class="controls">
+    <button onclick="toggleSnapPoints()">Show Grid</button>
+    <button onclick="resetPlayers()">Reset</button>
+    <button onclick="playAnimation()">Play</button>
+  </div>
+
+  <div style = "display : flex; flex-direction: row; justify-content: center;">
+    <div id="field">
+        <svg class="field-elements" width="600" height="600">
+            <rect x="150" y = "442" width="300" height="160" />
+            <circle cx="300" cy="0" r="120" />
+        </svg>
+    </div>
+
+    <div class = "info" style = "display : flex; flex-direction: column; gap : 8px; width : 300px; padding : 24px;">
+      <img style = "padding : 12px 24px; " width = "60" height = "auto" src = "https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Tottenham_Hotspur.svg/800px-Tottenham_Hotspur.svg.png"/>
+
+      <h1>Line Up</h1>
+      <h3>4-2-3-1</h3>
+
+      <br/>
+
+      <h3>Substitutes</h3>
+      <p>Sub Name</p>
+      <p>Sub Name</p>
+      <p>Sub Name</p>
+
+      <br/>
+
+      <h3>Coach</h3>
+      <p>Coach Name</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { data } from "./data.js";
+
+    const FS = 600; // field size
+    const GRID_COLS = 10;
+    const GRID_ROWS = 10;
+    const field = document.getElementById("field");
+    const SNAP_THRESHOLD = 25; // Distance in pixels to snap
+
+    const players = [];
+    let playerIndex = 0;
+    let draggedPlayer = null;
+    let cells = [];
+    let snapPoints = [];
+    let showSnapPoints = false;
+
+    // Create grid cells and snap points
+    function initializeField() {
+      for (let row = 0; row < GRID_ROWS; row++) {
+        for (let col = 0; col < GRID_COLS; col++) {
+          const cell = document.createElement("div");
+          cell.classList.add("grid-cell");
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+          field.appendChild(cell);
+          cells.push(cell);
+        }
+      }
+
+      createSnapPoints();
+    }
+
+    function createSnapPoints() {
+      const cellWidth = FS / GRID_COLS;
+      const cellHeight = FS / GRID_ROWS;
+
+      // Create snap points at intersections and centers
+      for (let row = 0; row <= GRID_ROWS; row++) {
+        for (let col = 0; col <= GRID_COLS; col++) {
+          // Intersection points
+          const intersectionPoint = document.createElement("div");
+          intersectionPoint.classList.add("snap-point");
+          intersectionPoint.style.left = col * cellWidth + "px";
+          intersectionPoint.style.top = row * cellHeight + "px";
+          field.appendChild(intersectionPoint);
+          
+          snapPoints.push({
+            element: intersectionPoint,
+            x: col * cellWidth,
+            y: row * cellHeight,
+            type: 'intersection'
+          });
+        }
+      }
+
+      // Create center points for each cell
+      for (let row = 0; row < GRID_ROWS; row++) {
+        for (let col = 0; col < GRID_COLS; col++) {
+          const centerPoint = document.createElement("div");
+          centerPoint.classList.add("snap-point");
+          centerPoint.style.left = (col * cellWidth + cellWidth / 2) + "px";
+          centerPoint.style.top = (row * cellHeight + cellHeight / 2) + "px";
+          field.appendChild(centerPoint);
+          
+          snapPoints.push({
+            element: centerPoint,
+            x: col * cellWidth + cellWidth / 2,
+            y: row * cellHeight + cellHeight / 2,
+            type: 'center'
+          });
+        }
+      }
+    }
+
+    // Add event listeners
+    field.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    function handleMouseDown(e) {
+      const player = e.target.closest(".player");
+      
+      if (player) {
+        // Start dragging existing player
+        draggedPlayer = players.find(p => p.element === player);
+        if (draggedPlayer) {
+          draggedPlayer.element.classList.add("dragging");
+          if (showSnapPoints) {
+            snapPoints.forEach(point => point.element.classList.add("visible"));
+          }
+        }
+      } else if (playerIndex < data.length) {
+        // Create new player
+        const rect = field.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const newPlayer = createPlayer(data[playerIndex]);
+        field.appendChild(newPlayer.element);
+        newPlayer.element.style.left = x + "px";
+        newPlayer.element.style.top = y + "px";
+        players.push(newPlayer);
+        playerIndex++;
+        
+        // Start dragging the new player immediately
+        draggedPlayer = newPlayer;
+        draggedPlayer.element.classList.add("dragging");
+        if (showSnapPoints) {
+          snapPoints.forEach(point => point.element.classList.add("visible"));
+        }
+      }
+    }
+
+    function handleMouseMove(e) {
+      if (!draggedPlayer) return;
+
+      const rect = field.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Find nearest snap point
+      let nearestSnapPoint = null;
+      let nearestDistance = Infinity;
+
+      snapPoints.forEach(point => {
+        const distance = Math.sqrt(
+          Math.pow(x - point.x, 2) + Math.pow(y - point.y, 2)
+        );
+        
+        if (distance < nearestDistance && distance < SNAP_THRESHOLD) {
+          nearestDistance = distance;
+          nearestSnapPoint = point;
+        }
+      });
+
+      // Clear previous active snap point
+      snapPoints.forEach(point => point.element.classList.remove("active"));
+
+      if (nearestSnapPoint) {
+        // Snap to nearest point
+        draggedPlayer.element.style.left = nearestSnapPoint.x + "px";
+        draggedPlayer.element.style.top = nearestSnapPoint.y + "px";
+        nearestSnapPoint.element.classList.add("active");
+      } else {
+        // Free positioning
+        draggedPlayer.element.style.left = x + "px";
+        draggedPlayer.element.style.top = y + "px";
+      }
+    }
+
+    function handleMouseUp(e) {
+      if (!draggedPlayer) return;
+
+      draggedPlayer.element.classList.remove("dragging");
+      snapPoints.forEach(point => {
+        point.element.classList.remove("visible", "active");
+      });
+      draggedPlayer = null;
+    }
+
+    function createPlayer(playerData) {
+      const playerElement = document.createElement("div");
+      playerElement.className = "player";
+
+      const imageWrapper = document.createElement("div");
+      imageWrapper.className = "image-container";
+
+      const img = document.createElement("img");
+      img.src = playerData.photo;
+      img.className = "player-photo";
+      img.draggable = false;
+
+      const infoRow = document.createElement("div");
+      infoRow.className = "player-info";
+
+      const name = document.createElement("p");
+      name.textContent = playerData.name;
+      name.className = "player-name";
+
+      const number = document.createElement("p");
+      number.textContent = playerData.backnumber;
+      number.className = "player-number";
+
+      imageWrapper.appendChild(img);
+      infoRow.appendChild(number);
+      infoRow.appendChild(name);
+      playerElement.appendChild(imageWrapper);
+      playerElement.appendChild(infoRow);
+
+      return {
+        element: playerElement,
+        data: playerData
+      };
+    }
+
+    // Control functions
+    window.toggleSnapPoints = function() {
+        showSnapPoints = !showSnapPoints; // a switch
+
+        // Toggle snapPoints visibility
+        snapPoints.forEach(point => point.element.classList.toggle("visible", showSnapPoints));
+
+        // Select all grid cells
+        const gridCells = document.querySelectorAll(".grid-cell");
+
+        // Toggle visibility class for each grid cell
+        gridCells.forEach(cell => cell.classList.toggle("visible", showSnapPoints));
+    };
+
+    window.resetPlayers = function() {
+      players.forEach(player => player.element.remove());
+      players.length = 0;
+      playerIndex = 0;
+      
+      // Reset info elements opacity
+      gsap.set(".info > *", { opacity: 0 });
+    };
+
+    // New play animation function
+    window.playAnimation = function() {
+      // First set all elements to opacity 0
+      gsap.set(".info > *", { opacity: 0 });
+      gsap.set(".player", { opacity: 0 });
+      
+      // Create timeline for smooth sequencing
+      const tl = gsap.timeline();
+      
+      // First animate all info elements with stagger
+      tl.to(".info > *", {
+        opacity: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "power2.out"
+      });
+      
+      // Then animate all players with stagger
+      if (players.length > 0) {
+        const playerElements = players.map(player => player.element);
+        tl.to(playerElements, {
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: "back.out(1.2)",
+        }, "-=0.3"); // Start players animation slightly before info finishes
+      }
+    };
+
+    // Initialize the field
+    initializeField();
+  </script>
+</body>
+</html>

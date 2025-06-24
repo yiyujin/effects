@@ -1,0 +1,225 @@
+  @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+:root {
+    --br : 6px;
+
+    --bg : #1b1b1b;
+
+    --white80 : rgba(255, 255, 255, 0.8);
+    --white40 : rgba(255, 255, 255, 0.4);
+    --white16 : rgba(255, 255, 255, 0.16);
+    --white8 : rgba(255, 255, 255, 0.08);
+    --white4 : rgba(255, 255, 255, 0.04);
+
+    --btn : rgba(9, 153,255, 0.80);
+    --btn40 : rgba(9, 153,255, 0.4);
+}
+
+body {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 400;
+
+    background-color: var(--bg);
+    
+    color: white;
+
+    margin: 0;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+h3 {
+    font-weight: 500;
+}
+
+.code {
+    background: var(--white4);
+    color : white;
+
+    font-family: "IBM Plex Mono";
+
+    padding : 20px 28px;
+
+    border : 1px solid var(--white8);
+    border-radius: var(--br);
+
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.5s ease;
+}
+
+.code.open {
+  /* max-height will be set in JS */
+}
+
+.hoisted-line {
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+
+button {
+    border : 3px solid var(--white8);
+    background-color : var(--white8);
+    
+    border-radius: 8px;
+
+    font-size : 14px;
+
+    width : 120px;
+    height : 48px;
+
+    color : var(--white80);
+
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+
+    transition : background-color ease 0.3s;
+}
+
+button:hover {
+    background-color: var(--btn40);
+    border : 3px solid var(--btn);
+
+    cursor : pointer;
+}
+
+.btn-label {
+    position: relative;
+    z-index: 1;
+  }
+
+.btn-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: var(--btn40);
+    z-index: 1;
+    transition: width 0.2s ease;
+}
+
+button.animating {
+    border: 3px solid var(--btn);
+}
+
+.btn-label {
+    position: relative;
+    z-index: 2;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+
+/* SCANNER DOT */
+.scanner-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--btn);
+    border-radius: 50%;
+    
+    z-index: 100;
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.scanner-dot.active {
+    opacity: 1;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+
+/*  */
+.original-code {
+    position : relative;
+
+    width : 400px;
+    
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: var(--br);
+
+    padding : 20px 28px;
+
+    border: 1px solid #333;
+}
+
+.code-line {
+    margin: 10px 0;
+    position: relative;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 24px;
+
+    font-family : "IBM Plex Mono";
+}
+
+/* TOKEN */
+.token {
+    display: inline-block;
+    margin: 2px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* .token.keyword {
+    color: #ff79c6;
+    font-weight: bold;
+}
+
+.token.identifier {
+    color: #8be9fd;
+}
+
+.token.operator {
+    color: #ff6b6b;
+}
+
+.token.number {
+    color: #bd93f9;
+}
+
+.token.string {
+    color: #f1fa8c;
+}
+
+.token.function {
+    color: #50fa7b;
+} */
+
+.token.detected {
+    color : var(--btn);
+}
+
+.flying-variable {
+    position: absolute;
+    z-index: 200;
+
+    font-family : "IBM Plex Mono";
+
+    pointer-events: none;
+}

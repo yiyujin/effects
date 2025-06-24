@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variable Hoisting Animation</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="code-container">
+        <h3>Hoisted Code</h3>          
+        <div class="code">
+            <div id="hoistedDeclarations"></div>
+            <div id="hoistedAssignments"></div>
+        </div>
+
+        <h3>Original Code</h3>
+        <div class="original-code">
+            <div id="originalCode"></div>
+            <div class="scanner-dot" id="scannerDot"></div>
+        </div>
+    </div>
+
+    <div style = "position : fixed; bottom : 80px; display: flex; flex-direction: row; gap : 4px; justify-content: center;">
+        <button class="btn" onclick="startAnimation()">
+            <span class="btn-label">Hoisting</span>
+            <span class="btn-bg" id="progressFillHoist"></span>
+        </button>
+
+        <button class="btn" onclick="startExecute()" disabled>
+            <span class="btn-label">Execute</span>
+            <span class="btn-bg" id="progressFillExecute"></span>
+        </button>
+    </div>
+
+    <script src = "script.js"></script>
+</body>
+</html>

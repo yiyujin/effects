@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Tree Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            margin-top: 200px;
+
+            font-family: 'Arial';
+            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #diagram {
+            width: 600px;
+            height: 100px;
+
+            position: relative;
+        }
+
+        .node {
+            position: absolute;
+
+            background: white;
+            border: 1px solid #333;
+
+            border-radius: 4px;
+            padding: 8px 16px;
+
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+
+            z-index : 1;
+        }
+
+        .node.root {
+            background: #e8f4f8;
+            border-color: #2196F3;
+        }
+
+        .node.parent {
+            background: #f3e5f5;
+            border-color: #9C27B0;
+        }
+
+        .node.child {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+        }
+
+        .connection {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .connection svg {
+            overflow: visible;
+        }
+
+        .connection path {
+            stroke: #d8d8d8;
+            stroke-width: 2;
+            fill: none;
+            opacity: 1;
+        }
+
+        .dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+
+            background: #757575;
+            border-radius: 50%;
+
+            opacity: 0;
+            transform: scale(0);
+
+            z-index: 2;
+        }
+
+        .title {
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="diagram"></div>
+
+<script>
+let data = [];
+
+function generateData() {
+    data = [];
+    const numberOfParents = Math.floor(Math.random() * 3) + 2; // 2-4 parent nodes
+    
+    for(let i = 0; i < numberOfParents; i++){
+        data.push({
+            child: Math.floor(Math.random() * 4) + 1 // 1-4 children per parent
+        });
+    }
+}
+
+function createStructure() {
+    const diagram = document.getElementById('diagram');
+    // diagram.innerHTML = ''; // not enough!
+    diagram.replaceChildren(); // Better than `innerHTML = ''`
+    
+    const pW = diagram.offsetWidth * 0.75; // parent node width
+    const cW = pW * 0.75; // child node width
+    const h = 40; // height of each node
+    const spacing = 0;
+    
+    let nodes = [];
+    let connections = [];
+    let yOffset = spacing;
+    
+    // Create root node
+    const rootNode = createNode('ROOT', 0, 0, diagram.offsetWidth, h, 'root');
+    diagram.appendChild(rootNode);
+    nodes.push(rootNode);
+    
+    // Create parent and child nodes
+    for (let i = 0; i < data.length; i++) {
+        // Create parent node
+        const parentX = diagram.offsetWidth - pW;
+        const parentY = 0;
+
+        const parentNode = createNode(`Parent ${i}`, parentX, 0, pW, h, 'parent');
+        diagram.appendChild(parentNode);
+        nodes.push(parentNode);
+        
+        // Create connection from root to parent
+        const rootToParent = createConnection(0, 0, parentX, parentY, true);
+        diagram.appendChild(rootToParent);
+        connections.push(rootToParent);
+        
+        // Create child nodes
+        for (let j = 0; j < data[i].child; j++) {
+            const childX = diagram.offsetWidth - cW;
+            const childY = 0;
+
+            const childNode = createNode(`Child ${j}`, childX, childY, cW, h, 'child');
+            diagram.appendChild(childNode);
+            nodes.push(childNode);
+            
+            // Create connection from parent to child
+            const parentToChild = createConnection(0, 0, 0, 0, false);
+            diagram.appendChild(parentToChild);
+            connections.push(parentToChild);
+        }
+        
+        yOffset += (data[i].child + 1) * (h + spacing);
+    }
+    
+    return { nodes, connections };
+}
+
+function createNode(text, x, y, width, height, type) {
+    const node = document.createElement('div');
+    node.className = `node ${type}`;
+    node.textContent = text;
+    node.style.left = x + 'px';
+    node.style.top = y + 'px';
+    node.style.width = width + 'px';
+    node.style.height = height + 'px';
+    node.style.lineHeight = height + 'px';
+    return node;
+}
+
+function createConnection(fromX, fromY, toX, toY, isRootConnection) {
+    // console.log('Creating connection:', fromX, fromY, toX, toY, isRootConnection);
+
+    const connection = document.createElement('div');
+    connection.className = 'connection';
+    connection.style.position = 'absolute';
+    connection.style.left = '0';
+    connection.style.top = '0';
+    connection.style.width = '100%';
+    connection.style.height = '100%';
+    connection.style.pointerEvents = 'none';
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.style.position = 'absolute';
+    svg.style.left = '0';
+    svg.style.top = '0';
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    
+    let pathData;
+    
+    if (isRootConnection) {
+        // Root to parent: horizontal then vertical
+        const midX = fromX + 40;
+        pathData = `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
+    } else {
+        // Parent to child: horizontal then vertical
+        const midX = toX - 40;
+        pathData = `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
+    }
+    
+    path.setAttribute('d', pathData);
+    path.setAttribute('stroke', '#333');
+    path.setAttribute('stroke-width', '1');
+    path.setAttribute('fill', 'none');
+    
+    svg.appendChild(path);
+    connection.appendChild(svg);
+    
+    return connection;
+}
+
+function animateStructure() {
+    generateData();
+
+    const diagram = document.getElementById('diagram');
+    diagram.innerHTML = '';
+
+    // SIZE
+    const pW = diagram.offsetWidth * 0.75;
+    const cW = pW * 0.75;
+    const h = 40;
+    const spacing = 40;
+    let yOffset = h + spacing * 2;
+
+    // 1) CREATE ROOT
+    const rootNode = createNode('ROOT', 0, 0, diagram.offsetWidth, h, 'root');
+    diagram.appendChild(rootNode);
+
+    // 2) PREPARE PARENT & CHILD ELEMENT OBJECTS
+    const parents = [];
+    const parentConns = [];
+    const children = [];
+    const childConns = [];
+
+    data.forEach((group, i) => {
+        // parent
+        const px = diagram.offsetWidth - pW;
+        const py = yOffset;
+        const pNode = createNode(`Parent ${i}`, px, py, pW, h, 'parent');
+        diagram.appendChild(pNode);
+
+        const connP = createConnection(0, h / 2 + 4, px, py + h / 2 + 8, true);
+        diagram.appendChild(connP);
+        const pathP = connP.querySelector('path');
+        const lenP = pathP.getTotalLength();
+        pathP.style.strokeDasharray = lenP;
+        pathP.style.strokeDashoffset = lenP;
+
+        parents.push({ node: pNode, path: pathP });
+
+        // children for this parent
+        for (let j = 0; j < group.child; j++) {
+            const cx = diagram.offsetWidth - cW;
+            const cy = yOffset + (j + 1) * (h + spacing);
+            const cNode = createNode(`Child ${j}`, cx, cy, cW, h, 'child');
+            diagram.appendChild(cNode);
+
+            const connC = createConnection(px, py + h / 2, cx, cy + h / 2 + 8, false);
+            diagram.appendChild(connC);
+            const pathC = connC.querySelector('path');
+            const lenC = pathC.getTotalLength();
+            pathC.style.strokeDasharray = lenC;
+            pathC.style.strokeDashoffset = lenC;
+
+            children.push({ node: cNode, path: pathC });
+        }
+
+        yOffset += (group.child + 1) * (h + spacing);
+    });
+
+    // 3) BUILD TIMELINE
+    const tl = gsap.timeline();
+
+    // animate root
+    tl.fromTo(rootNode,
+        { opacity: 0, scale: 0, rotation: -10 },
+        { opacity: 1, scale: 1, rotation: 0, duration: 0.2 }
+    );
+
+    // animate ALL parents (node → dot → line)
+    // parents.forEach(({ node, path }) => {
+    //     tl.to(path,
+    //         { strokeDashoffset: 0, duration: 0.5 }
+    //     );
+    //     tl.fromTo(node,
+    //         { opacity: 0, scale: 0, rotation: -10 },
+    //         { opacity: 1, scale: 1, rotation: 0, duration: 0.6 }
+    //     );
+    // });
+
+    // Animate all paths first
+// 1. Animate all parent paths first
+gsap.to(parents.map(p => p.path), {
+    strokeDashoffset: 0,
+    duration: 0.5,
+    ease: 'power2.inOut',
+    onComplete: () => {
+        // 2. Animate all parent nodes
+        gsap.fromTo(parents.map(p => p.node),
+            { opacity: 0, scale: 0, rotation: -10 },
+            {
+                opacity: 1,
+                scale: 1,
+                rotation: 0,
+                duration: 1,
+                ease: 'back.out(1.7)',
+                stagger: 0.1,
+                onComplete: () => {
+                    // 3. Animate all child paths
+                    gsap.to(children.map(c => c.path), {
+                        strokeDashoffset: 0,
+                        duration: 0.5,
+                        ease: 'power2.inOut',
+                        onComplete: () => {
+                            // 4. Animate all child nodes
+                            gsap.fromTo(children.map(c => c.node),
+                                { opacity: 0, scale: 0 },
+                                {
+                                    opacity: 1,
+                                    scale: 1,
+                                    duration: 0.6,
+                                    ease: 'back.out(1.7)',
+                                    stagger: 0.05
+                                }
+                            );
+                        }
+                    });
+                }
+            }
+        );
+    }
+});
+
+
+
+    // animate ALL children (node → dot → line)
+    // children.forEach(({ node, path }) => {
+    //     tl.fromTo(node,
+    //         { opacity: 0 },
+    //         { opacity: 1, duration: 0.3 }
+    //     );
+    //     tl.to(path,
+    //         { strokeDashoffset: 0, duration: 0.5, ease: 'power2.inOut' }
+    //     );
+    // });
+
+
+    return tl;
+}
+
+    function loopAnimation() {
+        const tl = animateStructure();
+        
+        tl.call(() => {
+            setTimeout(loopAnimation, 5000); // optional pause between loops
+        });
+    }
+
+    loopAnimation();
+
+</script>
+</body>
+</html>

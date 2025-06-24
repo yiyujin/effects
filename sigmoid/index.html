@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Sigmoid Calculator with Animation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+  :root {
+    --white80 : rgba(255, 255, 255, 0.8);
+    --white40 : rgba(255, 255, 255, 0.4);
+    --white16 : rgba(255, 255, 255, 0.16);
+    --white8 : rgba(255, 255, 255, 0.08);
+
+    --btn : rgba(9, 153,255, 0.56);
+    --btn40 : rgba(9, 153,255, 0.4);
+  }
+
+  body {
+    font-family: "Open Sans", sans-serif;
+
+    background : #1b1b1b;
+    color : var(--white80);
+
+    width : 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    margin-top : 200px;
+  }
+
+  button {
+    border : 3px solid var(--white8);
+    background-color : var(--white8);
+    
+    border-radius: 8px;
+
+    font-size : 20px;
+    font-family: "IBM Plex Mono";
+
+    width : 120px;
+    height : 48px;
+
+    color : var(--white80);
+
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  button:hover {
+    background-color: var(--btn40);
+    border : 3px solid var(--btn);
+
+    cursor : pointer;
+  }
+
+  .btn-label {
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: var(--btn40);
+    z-index: 0;
+    transition: width 0.2s ease;
+  }
+
+  button.animating {
+    border: 3px solid var(--btn);
+  }
+
+  #result {
+    margin-top: 10px;
+
+    font-family: "IBM Plex Mono";
+    /* font-weight: bold; */
+  }
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<!-- <h2>Sigmoid Calculator with Graph</h2> -->
+
+<!-- <label>Input x: <input type="number" id="inputX" step="any" value="0" /></label>
+<button onclick="jumpToX()">Calculate</button> -->
+
+<div id="result">sigmoid(0) = 0.5</div>
+
+<!-- <div style = "display: flex; flex-direction: row; gap : 8px;">
+  <button onclick="animateToInfinity(true)">x → +∞</button>
+  <button onclick="animateToInfinity(false)">x → -∞</button>
+</div> -->
+
+<canvas id="sigmoidCanvas" width="600" height="300"></canvas>
+
+<div style="display: flex; flex-direction: row; gap: 8px; position: relative;">
+  <button class="animated-btn" onclick="animateToInfinity(true)">
+    <span class="btn-label">x → +∞</span>
+    <span class="btn-bg"></span>
+  </button>
+  <button class="animated-btn" onclick="animateToInfinity(false)">
+    <span class="btn-label">x → -∞</span>
+    <span class="btn-bg"></span>
+  </button>
+</div>
+
+<script>
+  // Get the CSS variable from :root
+  const rootStyles = getComputedStyle(document.documentElement);
+  const btn40 = rootStyles.getPropertyValue('--btn40').trim();
+
+  const canvas = document.getElementById('sigmoidCanvas');
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+
+  // Map x from -10..10 to canvas x pixel range 50..550
+  // Map sigmoid output 0..1 to canvas y pixel range 250..50 (flip Y)
+  const marginX = 50;
+  const marginY = 50;
+  const xMin = -10;
+  const xMax = 10;
+
+  function sigmoid(x) {
+    return 1 / (1 + Math.exp(-x));
+  }
+
+  function mapX(x) {
+    return marginX + ((x - xMin) / (xMax - xMin)) * (width - 2 * marginX);
+  }
+
+  function mapY(y) {
+    // invert y so 0 is bottom and 1 is top
+    return height - (marginY + y * (height - 2 * marginY));
+  }
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.lineWidth = 0.5;
+
+    // Draw vertical grid lines (x)
+    for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+      let px = mapX(x);
+      ctx.beginPath();
+      ctx.moveTo(px, marginY);
+      ctx.lineTo(px, height - marginY);
+      ctx.stroke();
+
+      // ctx.fillStyle = white16;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.font = '12px Arial';
+      ctx.fillText(x, px - 5, height - marginY + 24);
+    }
+
+    // Draw horizontal grid lines (y)
+    for (let y = 0; y <= 1; y += 0.1) {
+      let py = mapY(y);
+      ctx.beginPath();
+      ctx.moveTo(marginX, py);
+      ctx.lineTo(width - marginX, py);
+      ctx.stroke();
+
+      // ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      ctx.fillText(y.toFixed(1), 16, py + 4);
+    }
+
+    // Draw axis lines
+    // ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)';
+    // ctx.lineWidth = 3;
+
+    // // x axis
+    // ctx.beginPath();
+    // ctx.moveTo(marginX, height - marginY);
+    // ctx.lineTo(width - marginX, height - marginY);
+    // ctx.stroke();
+
+    // // y axis
+    // ctx.beginPath();
+    // ctx.moveTo(marginX, marginY);
+    // ctx.lineTo(marginX, height - marginY);
+    // ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = 'white';
+    ctx.font = '16px Arial';
+    ctx.fillText('x', width - marginX + 24, height - marginY + 24);
+    ctx.fillText('σ(x)', marginX - 34, marginY - 24);
+  }
+
+  function drawSigmoidCurve() {
+    ctx.strokeStyle = btn40;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+
+    for (let px = marginX; px <= width - marginX; px++) {
+      // Convert px to x
+      let x = xMin + ((px - marginX) / (width - 2 * marginX)) * (xMax - xMin);
+      let y = sigmoid(x);
+      let py = mapY(y);
+
+      if (px === marginX) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+
+    ctx.stroke();
+  }
+
+  function drawDot(x) {
+    const px = mapX(x);
+    const py = mapY(sigmoid(x));
+
+    ctx.fillStyle = '#19d5ff';
+    ctx.beginPath();
+    ctx.arc(px, py, 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function render(x) {
+    drawGrid();
+    drawSigmoidCurve();
+    drawDot(x);
+  }
+
+  // Initial render
+  render(0);
+
+  const resultDiv = document.getElementById('result');
+  const inputX = document.getElementById('inputX');
+
+  function jumpToX() {
+    const x = parseFloat(inputX.value);
+    if (isNaN(x)) {
+      resultDiv.textContent = '숫자를 입력해주세요.';
+      return;
+    }
+
+    const val = sigmoid(x);
+
+    resultDiv.textContent = `sigmoid(${x.toFixed(1)}) = ${val.toFixed(5)}`;
+
+    render(x);
+  }
+
+  // GSAP animation: animate x value from start to end
+  let animationTween = null;
+
+  function animateToInfinity(toPositive) {
+    if (animationTween) animationTween.kill();
+
+    const startX = toPositive ? xMin : xMax;
+    const endX = toPositive ? xMax : xMin;
+    const obj = { x: startX };
+
+    // Which button is being animated?
+    const button = document.querySelectorAll('.animated-btn')[toPositive ? 0 : 1];
+    const bgSpan = button.querySelector('.btn-bg');
+
+    button.classList.add('animating');
+
+    animationTween = gsap.to(obj, {
+      x: endX,
+      duration: 5,
+      ease: "power1.inOut",
+      onUpdate: () => {
+        const x = obj.x;
+        const val = sigmoid(x);
+        
+        resultDiv.textContent = `sigmoid(${x.toFixed(0)}) = ${val.toFixed(5)}`;
+
+        render(x);
+
+        if (inputX) inputX.value = x.toFixed(0);
+
+        // Compute progress and update background width
+        const progress = Math.abs((x - startX) / (endX - startX));
+        bgSpan.style.width = `${progress * 100}%`;
+      },
+      onComplete: () => {
+        bgSpan.style.width = `0%`; // reset after animation ends
+
+        button.classList.remove('animating');
+      }
+    });
+}
+
+</script>
+
+</body>
+</html>
