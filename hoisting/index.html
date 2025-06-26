@@ -15,13 +15,16 @@
         </div>
 
         <h3>Original Code</h3>
-        <div class="original-code">
+        <div class="original-code" id = "originalCodeContainer">
             <div id="originalCode"></div>
             <div class="scanner-dot" id="scannerDot"></div>
         </div>
     </div>
 
-    <div style = "position : fixed; bottom : 80px; display: flex; flex-direction: row; gap : 4px; justify-content: center;">
+    
+    <div style = "position : fixed; bottom : 40px; display: flex; flex-direction: row; gap : 8px; justify-content: center; align-items: center;">
+        <h3 id = "scope"></h3>
+
         <button class="btn" onclick="startAnimation()">
             <span class="btn-label">Hoisting</span>
             <span class="btn-bg" id="progressFillHoist"></span>
@@ -31,6 +34,11 @@
             <span class="btn-label">Execute</span>
             <span class="btn-bg" id="progressFillExecute"></span>
         </button>
+
+        <button class="btn" onclick="nextScope()" disabled>
+            Next Scope
+        </button>
+
     </div>
 
     <script src = "script.js"></script>

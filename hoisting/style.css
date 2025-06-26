@@ -14,6 +14,10 @@
 
     --btn : rgba(9, 153,255, 0.80);
     --btn40 : rgba(9, 153,255, 0.4);
+    --btn16 : rgba(9, 153,255, 0.16);
+
+    /* function call */
+    --fc : rgba(9, 153, 255, 0);
 }
 
 body {
@@ -38,9 +42,13 @@ h3 {
 }
 
 .code {
+    /* FIXED HEIGHT */
+    height : 140px;
+
     background: var(--white4);
     color : white;
 
+    font-size : 14px;
     font-family: "IBM Plex Mono";
 
     padding : 20px 28px;
@@ -48,13 +56,12 @@ h3 {
     border : 1px solid var(--white8);
     border-radius: var(--br);
 
-    overflow: hidden;
-    max-height: 0;
     transition: max-height 0.5s ease;
 }
 
 .code.open {
   /* max-height will be set in JS */
+  max-height : none;
 }
 
 .hoisted-line {
@@ -89,7 +96,7 @@ button {
     transition : background-color ease 0.3s;
 }
 
-button:hover {
+.btn:hover {
     background-color: var(--btn40);
     border : 3px solid var(--btn);
 
@@ -105,15 +112,14 @@ button:hover {
     position: absolute;
     top: 0;
     left: 0;
+
     width: 0%;
     height: 100%;
+    
     background-color: var(--btn40);
+
     z-index: 1;
     transition: width 0.2s ease;
-}
-
-button.animating {
-    border: 3px solid var(--btn);
 }
 
 .btn-label {
@@ -121,29 +127,46 @@ button.animating {
     z-index: 2;
 }
 
+/* BUTTON STATES */
 button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     pointer-events: none;
 }
 
+.btn.animating {
+    opacity : 1;
+    background-color: var(--btn16);
+    border: 3px solid var(--btn);
+}
+
+.btn.completed {
+    border: 3px solid var(--btn);
+    background-color: var(--btn16);
+    
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
 
 /* SCANNER DOT */
 .scanner-dot {
     position: absolute;
     width: 12px;
     height: 12px;
+
     background: var(--btn);
     border-radius: 50%;
-    
+
     z-index: 100;
-    transition: all 0.5s ease;
-    opacity: 0;
+
+    /* opacity : 0; */
+    /* speed matters for sacnning speed */
+    transition: all 0.1s ease;
 }
 
 .scanner-dot.active {
-    opacity: 1;
-    animation: pulse 1s infinite;
+    /* opacity: 1; */
 }
 
 @keyframes pulse {
@@ -161,30 +184,39 @@ button:disabled {
     background: rgba(0, 0, 0, 0.5);
     border-radius: var(--br);
 
-    padding : 20px 28px;
+    padding : 20px 20px 28px 16px;
 
     border: 1px solid #333;
 }
 
 .code-line {
-    margin: 10px 0;
-    position: relative;
-    font-size: 16px;
-    line-height: 1.5;
-    min-height: 24px;
-
+    display: flex;
+    align-items: center;
+    font-size: 14px;
     font-family : "IBM Plex Mono";
+}
+
+.line-number {
+    display: inline-block;
+    width: 28px;
+    color: var(--white40);
+    user-select: none;
+
+    font-size : 12px;
+    
+    text-align: center;
+    /* margin-right: 10px; */
+
+    flex-shrink: 0;    /* flex 줄어들지 않게 */
 }
 
 /* TOKEN */
 .token {
-    display: inline-block;
-    margin: 2px;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 4px;
+    border-radius: 2px;
     transition: all 0.3s ease;
-    position: relative;
 }
+
 
 /* .token.keyword {
     color: #ff79c6;
@@ -211,6 +243,11 @@ button:disabled {
     color: #50fa7b;
 } */
 
+.token.func-call {
+    background-color: var(--fc);
+    border-radius: 0px;
+}
+
 .token.detected {
     color : var(--btn);
 }
@@ -220,6 +257,23 @@ button:disabled {
     z-index: 200;
 
     font-family : "IBM Plex Mono";
+    font-size : 14px;
 
     pointer-events: none;
+}
+
+/* INDICATOR */
+.scope-indicator {
+  position: absolute;
+  left: 1px;
+
+  width: 8px;
+  border-radius: 2px;
+  z-index: 5;
+}
+.scope-hoisting {
+  background-color: #4fa3ff; /* blue */
+}
+.scope-executing {
+  background-color: #ffa500; /* orange */
 }
