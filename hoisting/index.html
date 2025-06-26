@@ -7,23 +7,32 @@
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-    <div class="code-container">
-        <h3>Hoisted Code</h3>          
-        <div class="code">
-            <div id="hoistedDeclarations"></div>
-            <div id="hoistedAssignments"></div>
+    <div style = "display: flex; flex-direction: row; gap : 24px;">
+        <div class = "callstack-container">
+            <h3>Call Stack</h3>
+            <div class = "stack-container">
+            </div>
+
         </div>
 
-        <h3>Original Code</h3>
-        <div class="original-code" id = "originalCodeContainer">
-            <div id="originalCode"></div>
-            <div class="scanner-dot" id="scannerDot"></div>
+        <div class="code-container">
+            <h3>Hoisted Code</h3>          
+            <div class="code">
+                <div id="hoistedDeclarations"></div>
+                <div id="hoistedAssignments"></div>
+            </div>
+
+            <h3>Original Code</h3>
+            <div class="original-code" id = "originalCodeContainer">
+                <div id="originalCode"></div>
+                <div class="scanner-dot" id="scannerDot"></div>
+            </div>
         </div>
     </div>
 
     
     <div style = "position : fixed; bottom : 40px; display: flex; flex-direction: row; gap : 8px; justify-content: center; align-items: center;">
-        <h3 id = "scope"></h3>
+        <p id = "scope"></p>
 
         <button class="btn" onclick="startAnimation()">
             <span class="btn-label">Hoisting</span>

@@ -17,6 +17,8 @@ let lineScopeMapping = []; // Track scope level for each line
 let starts = [0, 1, 2]; // Starting line for each scope (0-indexed)
 let scopeEndLines = [7, 6, 4]; // End line for each scope (0-indexed)
 
+let scopes = ["Global EC", "outer EC", "inner EC"];
+
 function tokenize(code) {
     const tokenRegex = /(\bvar\b|\blet\b|\bconst\b|\bfunction\b)|([a-zA-Z_$][a-zA-Z0-9_$]*)|([=+\-*/(){};])|(\d+\.?\d*)|('[^']*'|"[^"]*")|(\s+)|(.)/g;
     const tokens = [];
@@ -110,6 +112,18 @@ function renderOriginalCode() {
         const openBraces = (line.match(/{/g) || []).length;
         scopeLevel += openBraces;
     });
+
+    // ADD CALL STACK - GLOBAL by default
+    const callstack = document.querySelector('.stack-container'); // 하나만 있을 경우
+    const newFrame = document.createElement('div'); // 새 div 생성
+    newFrame.classList.add('stack-frame');
+    newFrame.textContent = "Global EC"; // 예시로 텍스트 추가
+    callstack.appendChild(newFrame); // 내부에 추가
+
+    requestAnimationFrame(() => {
+        newFrame.classList.add('show');
+    });
+    
 }
 
 function analyzeVariables() {
@@ -530,6 +544,19 @@ function nextScope() {
     
     // Update scope display
     document.getElementById('scope').textContent = `Scope : ${currentScope}`;
+
+    // ADD CALL STACK
+    const callstack = document.querySelector('.stack-container'); // 하나만 있을 경우
+    const newFrame = document.createElement('div'); // 새 div 생성
+    newFrame.classList.add('stack-frame');
+    newFrame.textContent = scopes[currentScope]; // 예시로 텍스트 추가
+    callstack.appendChild(newFrame); // 내부에 추가
+
+    requestAnimationFrame(() => {
+        newFrame.classList.add('show');
+    });
+
+    drawScopeIndicator(currentScope, 'hoisting');
     
     // Show which variables are in this scope
     const scopeVars = variableDeclarations.filter(decl => decl.scope === currentScope);
