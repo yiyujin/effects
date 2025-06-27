@@ -8,11 +8,26 @@
 </head>
 <body>
     <div style = "display: flex; flex-direction: row; gap : 24px;">
-        <div class = "callstack-container">
-            <h3>Call Stack</h3>
-            <div class = "stack-container">
+        <div style="display: flex; flex-direction: column;">
+            <div class = "callstack-container">
+                <h3>Call Stack</h3>
+                <div class = "stack-container"></div>
             </div>
 
+            <div>
+                <h3>Execute Context LE</h3>
+                <div class = "le">
+                    <div id = "le">Global LE</div>
+                    <div class = "environmentRecord">
+                        <p>e</p>
+                        <p id = "er">a, outer</p>
+                    </div>
+                    <div class = "outerEnvironmentReference">
+                        <p>o</p>
+                        <p id = "oer">-</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="code-container">

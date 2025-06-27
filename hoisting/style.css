@@ -301,6 +301,8 @@ button:disabled {
     border-right : 2px solid var(--white16);
     border-bottom : 2px solid var(--white16);
 
+    border-radius: 0 0 var(--br) var(--br);
+
     display: flex;
     flex-direction: column-reverse;
     gap : 4px;
@@ -333,4 +335,59 @@ button:disabled {
 .stack-frame.show {
     transform: translateY(0);
     opacity: 1;
+}
+
+.stack-container .stack-frame {
+  opacity: 0.2;
+}
+
+.stack-container .stack-frame:last-child {
+  opacity: 1; /* override for the last child */
+}
+
+/* EC TABLE */
+.le {
+    border : 1px solid var(--white16);
+
+    border-radius: var(--br);
+
+    overflow: hidden;
+}
+
+#le {
+    background: var(--btn40);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size : 12px;
+}
+
+.le>div{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    height : 40px;
+    /* padding : 100px; */
+}
+
+.le>div p:nth-child(1) {
+    width: 40px;         /* fixed width */
+    flex-shrink: 0;      /* prevents shrinking */
+}
+
+.le>div p:nth-child(2) {
+    flex: 1;             /* fills remaining space */
+}
+
+.le>div>p{
+    border : 1px solid var(--white16);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height : 100%;
 }

@@ -17,7 +17,7 @@ let lineScopeMapping = []; // Track scope level for each line
 let starts = [0, 1, 2]; // Starting line for each scope (0-indexed)
 let scopeEndLines = [7, 6, 4]; // End line for each scope (0-indexed)
 
-let scopes = ["Global EC", "outer EC", "inner EC"];
+let scopes = ["Global", "outer", "inner"];
 
 function tokenize(code) {
     const tokenRegex = /(\bvar\b|\blet\b|\bconst\b|\bfunction\b)|([a-zA-Z_$][a-zA-Z0-9_$]*)|([=+\-*/(){};])|(\d+\.?\d*)|('[^']*'|"[^"]*")|(\s+)|(.)/g;
@@ -117,7 +117,7 @@ function renderOriginalCode() {
     const callstack = document.querySelector('.stack-container'); // 하나만 있을 경우
     const newFrame = document.createElement('div'); // 새 div 생성
     newFrame.classList.add('stack-frame');
-    newFrame.textContent = "Global EC"; // 예시로 텍스트 추가
+    newFrame.textContent = `${scopes[0]} EC`;
     callstack.appendChild(newFrame); // 내부에 추가
 
     requestAnimationFrame(() => {
@@ -549,18 +549,30 @@ function nextScope() {
     const callstack = document.querySelector('.stack-container'); // 하나만 있을 경우
     const newFrame = document.createElement('div'); // 새 div 생성
     newFrame.classList.add('stack-frame');
-    newFrame.textContent = scopes[currentScope]; // 예시로 텍스트 추가
+    newFrame.textContent = `${scopes[currentScope]} EC`; // 예시로 텍스트 추가
     callstack.appendChild(newFrame); // 내부에 추가
 
     requestAnimationFrame(() => {
         newFrame.classList.add('show');
     });
 
+
+
+
     drawScopeIndicator(currentScope, 'hoisting');
     
     // Show which variables are in this scope
     const scopeVars = variableDeclarations.filter(decl => decl.scope === currentScope);
     console.log(`Scope ${currentScope} variables:`, scopeVars.map(v => v.name));
+
+    // ADD LE
+    const le = document.querySelector('#le');
+    const oer = document.querySelector('#oer');
+    const er = document.querySelector('#er');
+
+    le.textContent = `${scopes[currentScope]} LE`;
+    oer.textContent = `${scopes[currentScope - 1]} LE`;
+    er.textContent = scopeVars.map(v => v.name).join(', ');
     
     // Reset everything for the new scope
     resetAnimation();
